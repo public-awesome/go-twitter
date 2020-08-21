@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
+	"os"
 	"sync"
 	"time"
 
@@ -26,12 +27,21 @@ type StreamService struct {
 	site   *sling.Sling
 }
 
+func getEnv(env, fallback string) string {
+	e := os.Getenv(env)
+	if e != "" {
+		return e
+	}
+	return fallback
+}
+
 // newStreamService returns a new StreamService.
 func newStreamService(client *http.Client, sling *sling.Sling) *StreamService {
+
 	sling.Set("User-Agent", userAgent)
 	return &StreamService{
 		client: client,
-		public: sling.New().Base(publicStream).Path("statuses/"),
+		public: sling.New().Base(getEnv("TWITTER_PUBLIC_STREAM_ENDPOINT", publicStream)).Path("statuses/"),
 		user:   sling.New().Base(userStream),
 		site:   sling.New().Base(siteStream),
 	}
